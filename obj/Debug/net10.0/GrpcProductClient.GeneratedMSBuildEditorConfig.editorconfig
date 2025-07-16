@@ -54,6 +54,14 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xQcm9kdWN0TGlzdC5yYXpvcg==
 build_metadata.AdditionalFiles.CssScope = 
 
+[D:/GrpcProductClient/Components/Pages/ProductReal.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xQcm9kdWN0UmVhbC5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/GrpcProductClient/Components/Pages/ProductRealReload.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xQcm9kdWN0UmVhbFJlbG9hZC5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
 [D:/GrpcProductClient/Components/Pages/Weather.razor]
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xXZWF0aGVyLnJhem9y
 build_metadata.AdditionalFiles.CssScope = 

@@ -1,0 +1,195 @@
+﻿@page "/productreal"
+@using Grpc.Core
+@using GrpcProductService
+@rendermode InteractiveServer
+@inject Product.ProductClient ProductClient 
+@implements IAsyncDisposable
+
+<h3>Product List</h3>
+<button class="btn btn-primary" @onclick="NavigateToAddProduct">Add Product</button>
+
+@if (products == null)
+{
+    <p><em>Loading...</em></p>
+}
+else if (products.Count == 0)
+{
+    <p>No products found.</p>
+}
+else
+{
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Description</th>
+                <th>Price</th>
+                <th>Tag</th>
+                <th>Created</th>
+                <th>Updated</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        @foreach (var product in products)
+        {
+            <tr>
+                <td>@product.Name</td>
+                <td>@product.Description</td>
+                <td>@product.Price</td>
+                <td>@product.Tag</td>
+                <td>@DateTime.Parse(product.CreatedAt).ToString("g")</td>
+                <td>@DateTime.Parse(product.UpdatedAt).ToString("g")</td>
+                <td>
+                    <button class="btn btn-primary me-2" @onclick="() => NavigateToEditProduct(product.Id)">Edit</button>
+                    <button class="btn btn-danger" @onclick="() => DeleteProduct(product.Id)">Delete</button>
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+}
+
+@code {
+    private List<ProductModel> products = new();
+    private AsyncServerStreamingCall<ProductModel>? streamingCall;
+    private CancellationTokenSource? cts;
+    
+    [Inject]
+    private NavigationManager NavigationManager { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadProducts();
+        await StartRealTimeUpdates();
+    }
+
+    private async Task LoadProducts()
+    {
+        try
+        {
+            var response = await ProductClient.ListProductAsync(new ListProductsRequest());
+            products = response.Products.ToList();
+            StateHasChanged();
+        }
+        catch (RpcException ex)
+        {
+            Console.WriteLine($"Error loading products: {ex.Status}");
+        }
+    }
+
+    private async Task StartRealTimeUpdates()
+    {
+        cts = new CancellationTokenSource();
+        streamingCall = ProductClient.SubscribeToUpdates(new EmptyRequest(), cancellationToken: cts.Token);
+
+        // Start listening for updates in the background
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                await foreach (var update in streamingCall.ResponseStream.ReadAllAsync(cts.Token))
+                {
+                    await HandleProductUpdate(update);
+                }
+            }
+            catch (RpcException ex) when (ex.StatusCode == StatusCode.Cancelled)
+            {
+                // Normal shutdown
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in real-time updates: {ex.Message}");
+            }
+        });
+    }
+
+    private async Task HandleProductUpdate(ProductModel update)
+    {
+        await InvokeAsync(() =>
+        {
+            switch (update.Tag)
+            {
+                case "created":
+                    // Add new product to the beginning of the list
+                    var exists = products.Any(p => p.Id == update.Id);
+                    if (!exists)
+                    {
+                        products.Insert(0, update);
+                    }
+                    break;
+                    
+                case "updated":
+                    // Update existing product
+                    var existingProduct = products.FirstOrDefault(p => p.Id == update.Id);
+                    if (existingProduct != null)
+                    {
+                        existingProduct.Name = update.Name;
+                        existingProduct.Description = update.Description;
+                        existingProduct.Price = update.Price;
+                        existingProduct.Tag = update.Tag;
+                        existingProduct.UpdatedAt = update.UpdatedAt;
+                    }
+                    else
+                    {
+                        products.Insert(0, update);
+                    }
+                    break;
+                    
+                case "deleted":
+                    // Remove deleted product
+                    var productToRemove = products.FirstOrDefault(p => p.Id == update.Id);
+                    if (productToRemove != null)
+                    {
+                        products.Remove(productToRemove);
+                    }
+                    break;
+            }
+            
+            StateHasChanged();
+        });
+    }
+
+    private void NavigateToAddProduct()
+    {
+        NavigationManager.NavigateTo("/addproduct");
+    }
+
+    private void NavigateToEditProduct(string productId)
+    {
+        NavigationManager.NavigateTo($"/editproduct/{productId}");
+    }
+
+    private async Task DeleteProduct(string productId)
+    {
+        try
+        {
+            var response = await ProductClient.DeleteProductAsync(new DeleteProductRequest { Id = productId });
+            
+            if (response.Success)
+            {
+                // The real-time update will handle the UI refresh
+                Console.WriteLine("Product deleted successfully");
+            }
+            else
+            {
+                Console.WriteLine($"Failed to delete product: {response.Message}");
+            }
+        }
+        catch (RpcException ex)
+        {
+            Console.WriteLine($"Error deleting product: {ex.Status}");
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (streamingCall != null)
+        {
+            streamingCall.Dispose();
+        }
+        
+        cts?.Cancel();
+        cts?.Dispose();
+    }
+}

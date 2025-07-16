@@ -88,3 +88,4 @@ D:\GrpcProductClient\obj\Debug\net10.0\GrpcProductClient.genruntimeconfig.cache
 D:\GrpcProductClient\obj\Debug\net10.0\ref\GrpcProductClient.dll
 D:\GrpcProductClient\bin\Debug\net10.0\Grpc.Net.Client.Web.dll
 D:\GrpcProductClient\bin\Debug\net10.0\Grpc.Net.ClientFactory.dll
+D:\GrpcProductClient\obj\Debug\net10.0\GrpcProductClient.sourcelink.json

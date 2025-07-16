@@ -67,6 +67,8 @@ namespace GrpcProductService {
     static readonly grpc::Marshaller<global::GrpcProductService.DeleteProductResponse> __Marshaller_product_DeleteProductResponse = grpc::Marshallers.Create(__Helper_SerializeMessage, context => __Helper_DeserializeMessage(context, global::GrpcProductService.DeleteProductResponse.Parser));
     [global::System.CodeDom.Compiler.GeneratedCode("grpc_csharp_plugin", null)]
     static readonly grpc::Marshaller<global::GrpcProductService.ProductModel> __Marshaller_product_ProductModel = grpc::Marshallers.Create(__Helper_SerializeMessage, context => __Helper_DeserializeMessage(context, global::GrpcProductService.ProductModel.Parser));
+    [global::System.CodeDom.Compiler.GeneratedCode("grpc_csharp_plugin", null)]
+    static readonly grpc::Marshaller<global::GrpcProductService.EmptyRequest> __Marshaller_product_EmptyRequest = grpc::Marshallers.Create(__Helper_SerializeMessage, context => __Helper_DeserializeMessage(context, global::GrpcProductService.EmptyRequest.Parser));
 
     [global::System.CodeDom.Compiler.GeneratedCode("grpc_csharp_plugin", null)]
     static readonly grpc::Method<global::GrpcProductService.CreateProductRequest, global::GrpcProductService.CreateProductResponse> __Method_CreateProduct = new grpc::Method<global::GrpcProductService.CreateProductRequest, global::GrpcProductService.CreateProductResponse>(
@@ -114,6 +116,14 @@ namespace GrpcProductService {
         __ServiceName,
         "ChatProduct",
         __Marshaller_product_ProductModel,
+        __Marshaller_product_ProductModel);
+
+    [global::System.CodeDom.Compiler.GeneratedCode("grpc_csharp_plugin", null)]
+    static readonly grpc::Method<global::GrpcProductService.EmptyRequest, global::GrpcProductService.ProductModel> __Method_SubscribeToUpdates = new grpc::Method<global::GrpcProductService.EmptyRequest, global::GrpcProductService.ProductModel>(
+        grpc::MethodType.ServerStreaming,
+        __ServiceName,
+        "SubscribeToUpdates",
+        __Marshaller_product_EmptyRequest,
         __Marshaller_product_ProductModel);
 
     /// <summary>Service descriptor</summary>
@@ -258,6 +268,16 @@ namespace GrpcProductService {
       public virtual grpc::AsyncDuplexStreamingCall<global::GrpcProductService.ProductModel, global::GrpcProductService.ProductModel> ChatProduct(grpc::CallOptions options)
       {
         return CallInvoker.AsyncDuplexStreamingCall(__Method_ChatProduct, null, options);
+      }
+      [global::System.CodeDom.Compiler.GeneratedCode("grpc_csharp_plugin", null)]
+      public virtual grpc::AsyncServerStreamingCall<global::GrpcProductService.ProductModel> SubscribeToUpdates(global::GrpcProductService.EmptyRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      {
+        return SubscribeToUpdates(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+      }
+      [global::System.CodeDom.Compiler.GeneratedCode("grpc_csharp_plugin", null)]
+      public virtual grpc::AsyncServerStreamingCall<global::GrpcProductService.ProductModel> SubscribeToUpdates(global::GrpcProductService.EmptyRequest request, grpc::CallOptions options)
+      {
+        return CallInvoker.AsyncServerStreamingCall(__Method_SubscribeToUpdates, null, options, request);
       }
       /// <summary>Creates a new instance of client from given <c>ClientBaseConfiguration</c>.</summary>
       [global::System.CodeDom.Compiler.GeneratedCode("grpc_csharp_plugin", null)]
