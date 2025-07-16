@@ -1,0 +1,74 @@
+﻿@page "/addproduct"
+@using Grpc.Core
+@using GrpcProductService
+@rendermode InteractiveServer
+@inject Product.ProductClient ProductClient
+@inject NavigationManager NavigationManager
+
+<h3>Add New Product</h3>
+
+<EditForm Model="@newProduct" OnValidSubmit="@HandleValidSubmit">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="form-group">
+        <label for="name">Product Name</label>
+        <InputText id="name" @bind-Value="newProduct.Name" class="form-control" />
+        <ValidationMessage For="@(() => newProduct.Name)" />
+    </div>
+
+    <div class="form-group">
+        <label for="description">Description</label>
+        <InputTextArea id="description" @bind-Value="newProduct.Description" class="form-control" />
+        <ValidationMessage For="@(() => newProduct.Description)" />
+    </div>
+
+    <div class="form-group">
+        <label for="price">Price</label>
+        <InputNumber id="price" @bind-Value="newProduct.Price" class="form-control" />
+        <ValidationMessage For="@(() => newProduct.Price)" />
+    </div>
+
+    <div class="form-group">
+        <label for="tag">Tag</label>
+        <InputText id="tag" @bind-Value="newProduct.Tag" class="form-control" />
+        <ValidationMessage For="@(() => newProduct.Tag)" />
+    </div>
+
+    <div class="form-group mt-3">
+        <button type="submit" class="btn btn-primary">Save</button>
+        <button type="button" class="btn btn-secondary ms-2" @onclick="Cancel">Cancel</button>
+    </div>
+</EditForm>
+
+@code {
+    private CreateProductRequest newProduct = new();
+
+    private async Task HandleValidSubmit()
+    {
+        try
+        {
+            var response = await ProductClient.CreateProductAsync(newProduct);
+            
+            if (response.Success)
+            {
+                NavigationManager.NavigateTo("/products");
+            }
+            else
+            {
+                Console.WriteLine($"Failed to create product: {response.Message}");
+                // You might want to show an error message to the user here
+            }
+        }
+        catch (RpcException ex)
+        {
+            Console.WriteLine($"Error creating product: {ex.Status}");
+            // Handle gRPC specific errors
+        }
+    }
+
+    private void Cancel()
+    {
+        NavigationManager.NavigateTo("/products");
+    }
+}

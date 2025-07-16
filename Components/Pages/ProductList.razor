@@ -1,0 +1,110 @@
+﻿@page "/products"
+@using Grpc.Core
+@using GrpcProductService
+@rendermode InteractiveServer
+@inject Product.ProductClient ProductClient 
+
+<h3>Product List</h3>
+<button class="btn btn-primary" @onclick="NavigateToAddProduct">Add Product</button>
+
+@if (products == null)
+{
+    <p><em>Loading...</em></p>
+}
+else if (products.Count == 0)
+{
+    <p>No products found.</p>
+}
+else
+{
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Description</th>
+                <th>Price</th>
+                <th>Tag</th>
+                <th>Created</th>
+                <th>Updated</th>
+            </tr>
+        </thead>
+        <tbody>
+        @foreach (var product in products)
+        {
+            <tr>
+                <td>@product.Name</td>
+                <td>@product.Description</td>
+                <td>@product.Price</td>
+                <td>@product.Tag</td>
+                <td>@product.CreatedAt</td>
+                <td>@product.UpdatedAt</td>
+                <td>
+                    <button class="btn btn-primary me-2" @onclick="() => NavigateToEditProduct(product.Id)">Edit</button>
+                    <button class="btn btn-danger" @onclick="() => DeleteProduct(product.Id)">Delete</button>
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+}
+
+@code {
+    private List<ProductModel> products = new();
+    // Add this to your @code block
+    [Inject]
+    private NavigationManager NavigationManager { get; set; }
+
+    private void NavigateToAddProduct()
+    {
+        NavigationManager.NavigateTo("/addproduct");
+    }
+
+    private void NavigateToEditProduct(string productId)
+    {
+        NavigationManager.NavigateTo($"/editproduct/{productId}");
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadProducts();
+    }
+
+    private async Task LoadProducts()
+    {
+        try
+        {
+            var response = await ProductClient.ListProductAsync(new ListProductsRequest());
+            products = response.Products.ToList();
+        }
+        catch (RpcException ex)
+        {
+            Console.WriteLine($"Error loading products: {ex.Status}");
+        }
+    }
+
+     private async Task DeleteProduct(string productId)
+    {
+        try
+        {
+            var response = await ProductClient.DeleteProductAsync(new DeleteProductRequest { Id = productId });
+            
+            if (response.Success)
+            {
+                // Refresh the product list after successful deletion
+                await LoadProducts();
+            }
+            else
+            {
+                Console.WriteLine($"Failed to delete product: {response.Message}");
+            }
+        }
+        catch (RpcException ex)
+        {
+            Console.WriteLine($"Error deleting product: {ex.Status}");
+        }
+    }
+
+    
+}
+
+
